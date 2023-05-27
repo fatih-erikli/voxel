@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/voxel/static/css/main.1a55f7cc.css",
+    "main.js": "/voxel/static/js/main.6697dc0d.js",
+    "static/js/787.85bbbfa4.chunk.js": "/voxel/static/js/787.85bbbfa4.chunk.js",
+    "index.html": "/voxel/index.html",
+    "main.1a55f7cc.css.map": "/voxel/static/css/main.1a55f7cc.css.map",
+    "main.6697dc0d.js.map": "/voxel/static/js/main.6697dc0d.js.map",
+    "787.85bbbfa4.chunk.js.map": "/voxel/static/js/787.85bbbfa4.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1a55f7cc.css",
+    "static/js/main.6697dc0d.js"
+  ]
+}
