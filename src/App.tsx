@@ -75,6 +75,10 @@ function* enumerate<T>(iterable: Iterable<T>): Iterable<readonly [number, T]> {
   }
 }
 
+function clamp(number: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, number));
+}
+
 const INITIAL_VOXEL = { color: "#d5d5d5", position: Vec3.fromValues(0, 0, 0) };
 
 function App() {
@@ -105,13 +109,7 @@ function App() {
       event.preventDefault();
       if (event.ctrlKey) {
         setScale((scale) =>
-          Math.max(
-            4,
-            Math.min(
-              100,
-              scale - (Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX / 2 : event.deltaY / 2)
-            )
-          )
+          clamp(scale - (Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX / 2 : event.deltaY / 2), 4, 100)
         );
       } else {
         const deltaX = event.deltaX / 4;
@@ -310,11 +308,6 @@ function App() {
           ))}
         </svg>
       </div>
-      <footer>
-        <a className="link" href={"https://twitter.com/fatiherikli92"}>
-          @fatiherikli92
-        </a>
-      </footer>
     </div>
   );
 }
