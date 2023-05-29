@@ -90,6 +90,15 @@ async function readTextFile(file: File): Promise<string> {
   });
 }
 
+function downloadURI(uri: string, name: string) {
+  const link = document.createElement("a");
+  link.download = name;
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function clamp(number: number, min: number, max: number) {
   return Math.max(min, Math.min(max, number));
 }
@@ -230,6 +239,7 @@ function App() {
         </div>
         <nav>
           <a
+            download="Voxel.json"
             onClick={(event) => {
               event.preventDefault();
               var blob = new Blob(
@@ -238,9 +248,9 @@ function App() {
                     voxels.map(({ color, position }) => ({ color, position: [position.x, position.y, position.z] }))
                   ),
                 ],
-                { type: "text/plain" }
+                { type: "text/json" }
               );
-              window.open(URL.createObjectURL(blob));
+              downloadURI(URL.createObjectURL(blob), "Voxel");
             }}
             className="link"
             href={"#export"}
