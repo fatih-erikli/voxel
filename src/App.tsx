@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Color from "color";
 import { Vec3, Mat4, Vec2 } from "gl-matrix/dist/esm";
 import "./App.css";
@@ -75,11 +75,29 @@ function* enumerate<T>(iterable: Iterable<T>): Iterable<readonly [number, T]> {
   }
 }
 
+async function readTextFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (event) => {
+      const result = event?.target?.result;
+      if (result) {
+        resolve(event.target.result as string);
+      } else {
+        reject();
+      }
+    };
+    fileReader.readAsText(file);
+  });
+}
+
 function clamp(number: number, min: number, max: number) {
   return Math.max(min, Math.min(max, number));
 }
 
 const INITIAL_VOXEL = { color: "#d5d5d5", position: Vec3.fromValues(0, 0, 0) };
+
+const MAX_VOXELS = 100;
+const WARN_AFTER = 60;
 
 function App() {
   const [{ width, height }] = useState<Size>({ width: 512, height: 512 });
@@ -151,6 +169,49 @@ function App() {
     });
     return mesh;
   }, [voxels, projection]);
+  const onImportFileInputChange: ChangeEventHandler<HTMLInputElement> = async (event) => {
+    if (!event.target.files) {
+      return;
+    }
+    const file = event.target.files[0];
+    let parsedContent;
+    try {
+      parsedContent = JSON.parse(await readTextFile(file));
+    } catch (e) {
+      alert("Invalid file type.");
+      return;
+    }
+    if (!Array.isArray(parsedContent)) {
+      alert("JSON content should be array of voxel objects.");
+      return;
+    }
+    for (const [index, voxelContent] of enumerate(parsedContent)) {
+      if (!Object.hasOwn(voxelContent, "position")) {
+        alert(`${index} does not have a position field.`);
+        return;
+      }
+      if (!Object.hasOwn(voxelContent, "color")) {
+        alert(`${index} does not have a color field.`);
+        return;
+      }
+      if (voxelContent.position.length !== 3) {
+        alert(`${index} position field should be array of three numbers represent x, y, z.`);
+        return;
+      }
+    }
+    setVoxels(
+      parsedContent.map((voxelContent) => ({
+        color: voxelContent.color,
+        position: Vec3.fromValues(voxelContent.position[0], voxelContent.position[1], voxelContent.position[2]),
+      }))
+    );
+  };
+  const onDrawClick = () => {
+    setMode("draw");
+  };
+  const onDeleteClick = () => {
+    setMode("del");
+  };
   return (
     <div className="container">
       <header>
@@ -159,20 +220,10 @@ function App() {
             <input type={"color"} value={currentColor} onChange={(e) => setCurrentColor(e.target.value)} />
           </div>
           <div className={"modes"}>
-            <button
-              onClick={() => {
-                setMode("draw");
-              }}
-              disabled={mode === "draw"}
-            >
+            <button onClick={onDrawClick} disabled={mode === "draw"}>
               Draw
             </button>
-            <button
-              onClick={() => {
-                setMode("del");
-              }}
-              disabled={mode === "del"}
-            >
+            <button onClick={onDeleteClick} disabled={mode === "del"}>
               Delete
             </button>
           </div>
@@ -189,16 +240,7 @@ function App() {
                 ],
                 { type: "text/plain" }
               );
-              var dlink = document.createElement("a");
-              dlink.download = "voxel.json";
-              dlink.href = window.URL.createObjectURL(blob);
-              dlink.onclick = function () {
-                setTimeout(() => {
-                  window.URL.revokeObjectURL(dlink.href);
-                }, 1000);
-              };
-              dlink.click();
-              dlink.remove();
+              window.open(URL.createObjectURL(blob));
             }}
             className="link"
             href={"#export"}
@@ -206,58 +248,7 @@ function App() {
             Export
           </a>
           <label>
-            <input
-              onChange={(event) => {
-                if (!event.target.files) {
-                  return;
-                }
-                const file = event.target.files[0];
-                const fileReader = new FileReader();
-                fileReader.onload = (event) => {
-                  if (!event.target || typeof event.target.result !== "string") {
-                    return;
-                  }
-                  let parsedContent;
-                  try {
-                    parsedContent = JSON.parse(event.target.result);
-                  } catch (e) {
-                    alert("Invalid file type.");
-                    return;
-                  }
-                  if (!Array.isArray(parsedContent)) {
-                    alert("JSON content should be array of voxel objects.");
-                    return;
-                  }
-                  for (const [index, voxelContent] of enumerate(parsedContent)) {
-                    if (!Object.hasOwn(voxelContent, "position")) {
-                      alert(`${index} does not have a position field.`);
-                      return;
-                    }
-                    if (!Object.hasOwn(voxelContent, "color")) {
-                      alert(`${index} does not have a color field.`);
-                      return;
-                    }
-                    if (voxelContent.position.length !== 3) {
-                      alert(`${index} position field should be array of three numbers represent x, y, z.`);
-                      return;
-                    }
-                  }
-                  setVoxels(
-                    parsedContent.map((voxelContent) => ({
-                      color: voxelContent.color,
-                      position: Vec3.fromValues(
-                        voxelContent.position[0],
-                        voxelContent.position[1],
-                        voxelContent.position[2]
-                      ),
-                    }))
-                  );
-                };
-                fileReader.readAsText(file);
-              }}
-              type="file"
-              style={{ display: "none" }}
-            />
+            <input onChange={onImportFileInputChange} type="file" style={{ display: "none" }} />
             <span className="link">Import</span>
           </label>
           <a
@@ -286,6 +277,9 @@ function App() {
           {computedMesh.map(([face, voxel, faceIndex], index) => (
             <polygon
               onClick={() => {
+                if (voxels.length >= MAX_VOXELS) {
+                  return;
+                }
                 if (mode === "del") {
                   setVoxels(voxels.filter(({ position }) => !Vec3.equals(position, voxel.position)));
                 } else {
@@ -308,6 +302,7 @@ function App() {
           ))}
         </svg>
       </div>
+      {voxels.length > WARN_AFTER && <p className="warning">{MAX_VOXELS - voxels.length} bricks left.</p>}
     </div>
   );
 }

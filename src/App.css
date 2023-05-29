@@ -14,6 +14,11 @@ footer {
   padding: 2rem;
 }
 
+.warning {
+  padding: 0.6rem 2rem;
+  background-color: rgb(255, 227, 175);
+}
+
 nav {
   display: flex;
   gap: 0.5rem;
