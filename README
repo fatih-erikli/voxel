@@ -1,0 +1,3 @@
+# TODO
+
+- Exclude the meshes if their bounding boxes are not within the viewport

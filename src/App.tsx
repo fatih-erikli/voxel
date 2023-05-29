@@ -95,6 +95,43 @@ function clamp(number: number, min: number, max: number) {
   return Math.max(min, Math.min(max, number));
 }
 
+function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } | { ok: false; err: string } {
+  if (!Array.isArray(parsedContent)) {
+    return { ok: false, err: "JSON content should be array of voxel objects." };
+  }
+
+  let err;
+  for (const [index, voxelContent] of enumerate(parsedContent)) {
+    if (!Object.hasOwn(voxelContent, "position")) {
+      err = `${index} does not have a position field.`;
+      break;
+    }
+    if (!Object.hasOwn(voxelContent, "color")) {
+      err = `${index} does not have a color field.`;
+      break;
+    }
+    if (voxelContent.position.length !== 3) {
+      err = `${index} position field should be array of three numbers represent x, y, z.`;
+      break;
+    }
+  }
+
+  if (err) {
+    return {
+      ok: false,
+      err,
+    };
+  } else {
+    return {
+      ok: true,
+      content: parsedContent.map((voxelContent) => ({
+        color: voxelContent.color,
+        position: Vec3.fromValues(voxelContent.position[0], voxelContent.position[1], voxelContent.position[2]),
+      })),
+    };
+  }
+}
+
 const INITIAL_VOXEL = { color: "#d5d5d5", position: Vec3.fromValues(0, 0, 0) };
 
 const MAX_VOXELS = 100;
@@ -182,30 +219,12 @@ function App() {
       alert("Invalid file type.");
       return;
     }
-    if (!Array.isArray(parsedContent)) {
-      alert("JSON content should be array of voxel objects.");
-      return;
+    const cleanedContent = cleanParsedContent(parsedContent);
+    if (cleanedContent.ok) {
+      setVoxels(cleanedContent.content);
+    } else {
+      alert(cleanedContent.err);
     }
-    for (const [index, voxelContent] of enumerate(parsedContent)) {
-      if (!Object.hasOwn(voxelContent, "position")) {
-        alert(`${index} does not have a position field.`);
-        return;
-      }
-      if (!Object.hasOwn(voxelContent, "color")) {
-        alert(`${index} does not have a color field.`);
-        return;
-      }
-      if (voxelContent.position.length !== 3) {
-        alert(`${index} position field should be array of three numbers represent x, y, z.`);
-        return;
-      }
-    }
-    setVoxels(
-      parsedContent.map((voxelContent) => ({
-        color: voxelContent.color,
-        position: Vec3.fromValues(voxelContent.position[0], voxelContent.position[1], voxelContent.position[2]),
-      }))
-    );
   };
   const onDrawClick = () => {
     setMode("draw");
