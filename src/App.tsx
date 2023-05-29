@@ -286,8 +286,12 @@ function App() {
       </header>
       <div className="canvas">
         <svg
+          onContextMenu={(event) => event.preventDefault()}
           onPointerMove={(event) => {
             if (event.buttons === 1) {
+              setAzimuth(azimuth - event.movementX);
+              setElevation(elevation + event.movementY);
+            } else if (event.buttons === 2) {
               setTranslate(Vec2.fromValues(translate.x + event.movementX, translate.y + event.movementY));
             }
           }}
