@@ -171,7 +171,7 @@ function App() {
         const deltaX = event.deltaX / 4;
         const deltaY = event.deltaY / 4;
         setAzimuth((azimuth) => azimuth + deltaX);
-        setElevation((elevation) => Math.min(226, Math.max(elevation - deltaY, 150)));
+        setElevation((elevation) => clamp(elevation - deltaY, 226, 150));
       }
     };
     document.body.addEventListener("wheel", onWheel, { passive: false });
