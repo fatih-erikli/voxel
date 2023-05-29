@@ -100,6 +100,10 @@ function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } 
     return { ok: false, err: "JSON content should be array of voxel objects." };
   }
 
+  if (parsedContent.length > MAX_VOXELS) {
+    return { ok: false, err: `Maximum ${MAX_VOXELS} amount of voxels allowed.` };
+  }
+
   let err;
   for (const [index, voxelContent] of enumerate(parsedContent)) {
     if (!Object.hasOwn(voxelContent, "position")) {
@@ -157,7 +161,7 @@ function App() {
       Vec3.fromValues(0, 0, 0),
       Vec3.fromValues(0, 1, 0)
     );
-    mat4.scale(Vec3.fromValues(scale, scale, scale));
+    Mat4.scale(mat4, mat4, Vec3.fromValues(scale, scale, scale));
     return mat4;
   }, [azimuth, elevation, scale]);
   useEffect(() => {
@@ -286,6 +290,7 @@ function App() {
       </header>
       <div className="canvas">
         <svg
+          touch-action="none"
           onContextMenu={(event) => event.preventDefault()}
           onPointerMove={(event) => {
             if (event.buttons === 1) {
@@ -295,7 +300,7 @@ function App() {
               setTranslate(Vec2.fromValues(translate.x + event.movementX, translate.y + event.movementY));
             }
           }}
-          width={"100%"}
+          width="100%"
           height={512}
           viewBox={`-${width / 2 + translate.x} -${height / 2 + translate.y} ${width} ${height}`}
         >
