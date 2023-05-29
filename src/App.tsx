@@ -136,6 +136,8 @@ const INITIAL_VOXEL = { color: "#d5d5d5", position: Vec3.fromValues(0, 0, 0) };
 
 const MAX_VOXELS = 100;
 const WARN_AFTER = 60;
+const MIN_ELEVATION = 120;
+const MAX_ELEVATION = 250;
 
 function App() {
   const [{ width, height }] = useState<Size>({ width: 512, height: 512 });
@@ -171,7 +173,7 @@ function App() {
         const deltaX = event.deltaX / 4;
         const deltaY = event.deltaY / 4;
         setAzimuth((azimuth) => azimuth + deltaX);
-        setElevation((elevation) => clamp(elevation - deltaY, 226, 150));
+        setElevation((elevation) => clamp(elevation - deltaY, MIN_ELEVATION, MAX_ELEVATION));
       }
     };
     document.body.addEventListener("wheel", onWheel, { passive: false });
@@ -232,6 +234,11 @@ function App() {
   const onDeleteClick = () => {
     setMode("del");
   };
+  const [positionsWhenTouchStart, setPositionsWhenTouchStart] = useState<{
+    client: Vec2;
+    azimuth: number;
+    elevation: number;
+  } | null>(null);
   return (
     <div className="container">
       <header>
@@ -287,12 +294,31 @@ function App() {
       <div className="canvas">
         <svg
           onContextMenu={(event) => event.preventDefault()}
+          onPointerDown={(event) => {
+            setPositionsWhenTouchStart({
+              azimuth,
+              elevation,
+              client: Vec2.fromValues(event.clientX, event.clientY),
+            });
+          }}
+          onPointerUp={() => {
+            setPositionsWhenTouchStart(null);
+          }}
           onPointerMove={(event) => {
-            if (event.buttons === 1) {
-              setAzimuth(azimuth - event.movementX);
-              setElevation(elevation + event.movementY);
-            } else if (event.buttons === 2) {
-              setTranslate(Vec2.fromValues(translate.x + event.movementX, translate.y + event.movementY));
+            event.preventDefault();
+            if (positionsWhenTouchStart) {
+              if (event.buttons === 1) {
+                setAzimuth(positionsWhenTouchStart.azimuth + positionsWhenTouchStart.client[0] - event.clientX);
+                setElevation(
+                  clamp(
+                    positionsWhenTouchStart.elevation + event.clientY - positionsWhenTouchStart.client[1],
+                    MIN_ELEVATION,
+                    MAX_ELEVATION
+                  )
+                );
+              } else if (event.buttons === 2) {
+                setTranslate(Vec2.fromValues(translate.x + event.movementX, translate.y + event.movementY));
+              }
             }
           }}
           width={"100%"}
