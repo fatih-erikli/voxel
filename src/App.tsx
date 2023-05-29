@@ -2,6 +2,7 @@ import { ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Color from "color";
 import { Vec3, Mat4, Vec2 } from "gl-matrix/dist/esm";
 import "./App.css";
+import { downloadURI } from "./badcodes";
 
 type Size = {
   width: number;
@@ -88,15 +89,6 @@ async function readTextFile(file: File): Promise<string> {
     };
     fileReader.readAsText(file);
   });
-}
-
-function downloadURI(uri: string, name: string) {
-  const link = document.createElement("a");
-  link.download = name;
-  link.href = uri;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
 function clamp(number: number, min: number, max: number) {
