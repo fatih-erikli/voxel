@@ -175,7 +175,7 @@ function App() {
         const deltaX = event.deltaX / 4;
         const deltaY = event.deltaY / 4;
         setAzimuth((azimuth) => azimuth + deltaX);
-        setElevation((elevation) => Math.min(226, Math.max(elevation - deltaY, 150)));
+        setElevation((elevation) => clamp(elevation - deltaY, 150, 226));
       }
     };
     document.body.addEventListener("wheel", onWheel, { passive: false });
@@ -184,8 +184,8 @@ function App() {
     };
   }, []);
   const computedMesh = useMemo(() => {
-    const mesh: [face: Vec3[], voxel: Voxel, faceIndex: number][] = [];
-    for (const voxel of voxels) {
+    const mesh: [face: Vec3[], voxel: Voxel, faceIndex: number, voxelIndex: number][] = [];
+    for (const [voxelIndex, voxel] of enumerate(voxels)) {
       for (const [faceIndex, vertexIndexes] of enumerate(CUBE_FACES)) {
         const face: Vec3[] = [];
         for (const vertexIndex of vertexIndexes) {
@@ -195,7 +195,7 @@ function App() {
           Vec3.transformMat4(vec3, vec3, projection);
           face.push(vec3);
         }
-        mesh.push([face, voxel, faceIndex]);
+        mesh.push([face, voxel, faceIndex, voxelIndex]);
       }
     }
     mesh.sort(([facea], [faceb]) => {
@@ -254,7 +254,6 @@ function App() {
         </div>
         <nav>
           <a
-            download="Voxel.json"
             onClick={(event) => {
               event.preventDefault();
               var blob = new Blob(
@@ -304,7 +303,7 @@ function App() {
           height={512}
           viewBox={`-${width / 2 + translate.x} -${height / 2 + translate.y} ${width} ${height}`}
         >
-          {computedMesh.map(([face, voxel, faceIndex], index) => (
+          {computedMesh.map(([face, voxel, faceIndex, voxelIndex], index) => (
             <polygon
               onClick={() => {
                 if (voxels.length >= MAX_VOXELS) {
@@ -322,7 +321,7 @@ function App() {
                   ]);
                 }
               }}
-              key={index}
+              key={`${faceIndex}:${voxelIndex}`}
               stroke={Color(voxel.color).darken(0.2).hex()}
               strokeOpacity={1}
               fill={voxel.color}
