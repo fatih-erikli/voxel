@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useEffect, useMemo, useState } from "react";
+import { ChangeEventHandler, useEffect, useMemo, useRef, useState } from "react";
 import Color from "color";
 import { Vec3, Mat4, Vec2 } from "gl-matrix/dist/esm";
 import "./App.css";
@@ -142,7 +142,7 @@ const MAX_VOXELS = 100;
 const WARN_AFTER = 60;
 
 function App() {
-  const [{ width, height }] = useState<Size>({ width: 512, height: 512 });
+  const [{ width, height }, setSize] = useState<Size>({ width: 512, height: 512 });
   const [mode, setMode] = useState<"draw" | "del">("draw");
   const [voxels, setVoxels] = useState<Voxel[]>([INITIAL_VOXEL]);
   const [azimuth, setAzimuth] = useState(110);
@@ -150,6 +150,14 @@ function App() {
   const [currentColor, setCurrentColor] = useState<string>(INITIAL_VOXEL.color);
   const [translate, setTranslate] = useState<Vec2>(Vec2.fromValues(0, 0));
   const [scale, setScale] = useState(20);
+  const canvas = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // consider using this https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
+    const clientRect = canvas.current?.getBoundingClientRect();
+    if (clientRect) {
+      setSize({ width: clientRect.width, height: clientRect.height });
+    }
+  }, []);
   const projection = useMemo(() => {
     const angleX = (azimuth / 180) * Math.PI;
     const angleY = (elevation / 180) * Math.PI;
@@ -287,7 +295,7 @@ function App() {
           </a>
         </nav>
       </header>
-      <div className="canvas">
+      <div className="canvas" ref={canvas}>
         <svg
           touch-action="none"
           onContextMenu={(event) => event.preventDefault()}
@@ -299,8 +307,8 @@ function App() {
               setTranslate(Vec2.fromValues(translate.x + event.movementX, translate.y + event.movementY));
             }
           }}
-          width="100%"
-          height={512}
+          width={width}
+          height={height}
           viewBox={`-${width / 2 + translate.x} -${height / 2 + translate.y} ${width} ${height}`}
         >
           {computedMesh.map(([face, voxel, faceIndex, voxelIndex], index) => (
@@ -331,7 +339,7 @@ function App() {
           ))}
         </svg>
       </div>
-      {voxels.length > WARN_AFTER && <p className="warning">{MAX_VOXELS - voxels.length} bricks left.</p>}
+      <footer>{voxels.length > WARN_AFTER && <p className="warning">{MAX_VOXELS - voxels.length} bricks left.</p>}</footer>
     </div>
   );
 }

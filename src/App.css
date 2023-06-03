@@ -1,7 +1,9 @@
 .container {
-  max-width: 512px;
   height: 100dvh;
   margin: auto;
+  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
@@ -12,6 +14,8 @@ header {
 
 footer {
   padding: 2rem;
+  bottom: 0;
+  position: fixed;
 }
 
 .warning {
@@ -22,6 +26,7 @@ footer {
 nav {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .tools {
@@ -32,6 +37,11 @@ nav {
 .modes {
   display: flex;
   gap: 0.3rem;
+}
+
+.canvas {
+  height: 100%;
+  display: flex;
 }
 
 [type="color"] {
