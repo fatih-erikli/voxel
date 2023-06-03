@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/voxel/static/css/main.dcd2ef8e.css",
-    "main.js": "/voxel/static/js/main.74749073.js",
+    "main.css": "/voxel/static/css/main.27dcb3be.css",
+    "main.js": "/voxel/static/js/main.84ee2d98.js",
     "static/js/787.85bbbfa4.chunk.js": "/voxel/static/js/787.85bbbfa4.chunk.js",
     "index.html": "/voxel/index.html",
-    "main.dcd2ef8e.css.map": "/voxel/static/css/main.dcd2ef8e.css.map",
-    "main.74749073.js.map": "/voxel/static/js/main.74749073.js.map",
+    "main.27dcb3be.css.map": "/voxel/static/css/main.27dcb3be.css.map",
+    "main.84ee2d98.js.map": "/voxel/static/js/main.84ee2d98.js.map",
     "787.85bbbfa4.chunk.js.map": "/voxel/static/js/787.85bbbfa4.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dcd2ef8e.css",
-    "static/js/main.74749073.js"
+    "static/css/main.27dcb3be.css",
+    "static/js/main.84ee2d98.js"
   ]
 }
