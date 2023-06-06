@@ -103,7 +103,7 @@ function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } 
   if (parsedContent.length > MAX_VOXELS) {
     return { ok: false, err: `Maximum ${MAX_VOXELS} amount of voxels allowed.` };
   }
-
+  const cleanedContent: Voxel[] = [];
   let err;
   for (const [index, voxelContent] of enumerate(parsedContent)) {
     if (!Object.hasOwn(voxelContent, "position")) {
@@ -121,10 +121,22 @@ function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } 
       err = `${index} does not have a valid color.`;
       break;
     }
-    if (position.length !== 3 && position.every((number: any) => !isNaN(parseInt(number)))) {
+    const cleanedPosition: number[] = position.map((number: any) => parseInt(number));
+    /*
+    Worth to take a note on this
+    > parseInt('Infinity')
+    NaN
+    > Number('Infinity')
+    Infinity
+    */
+    if (position.length !== 3 && position.some((number: any) => isNaN(number))) {
       err = `${index} position field should be array of three numbers represent x, y, z.`;
       break;
     }
+    cleanedContent.push({
+      color,
+      position: Vec3.fromValues(cleanedPosition[0], cleanedPosition[1], cleanedPosition[2]),
+    });
   }
 
   if (err) {
@@ -135,10 +147,7 @@ function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } 
   } else {
     return {
       ok: true,
-      content: parsedContent.map((voxelContent) => ({
-        color: voxelContent.color,
-        position: Vec3.fromValues(voxelContent.position[0], voxelContent.position[1], voxelContent.position[2]),
-      })),
+      content: cleanedContent,
     };
   }
 }
