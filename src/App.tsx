@@ -114,13 +114,14 @@ function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } 
       err = `${index} does not have a color field.`;
       break;
     }
+    const { color, position } = voxelContent;
     try {
-      Color(voxelContent.color);
+      Color(color);
     } catch {
-      err = `${index} does not have a valid color.`
+      err = `${index} does not have a valid color.`;
       break;
     }
-    if (voxelContent.position.length !== 3) {
+    if (position.length !== 3 && position.every((number: any) => !isNaN(parseInt(number)))) {
       err = `${index} position field should be array of three numbers represent x, y, z.`;
       break;
     }
@@ -352,7 +353,9 @@ function App() {
           ))}
         </svg>
       </div>
-      <footer>{voxels.length > WARN_AFTER && <p className="warning">{MAX_VOXELS - voxels.length} bricks left.</p>}</footer>
+      <footer>
+        {voxels.length > WARN_AFTER && <p className="warning">{MAX_VOXELS - voxels.length} bricks left.</p>}
+      </footer>
     </div>
   );
 }
