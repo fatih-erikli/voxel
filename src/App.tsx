@@ -230,11 +230,18 @@ function App() {
       return;
     }
     const file = event.target.files[0];
+    let textContent;
+    try {
+      textContent = await readTextFile(file);
+    } catch (e) {
+      alert("File read failed.");
+      return;
+    }
     let parsedContent;
     try {
-      parsedContent = JSON.parse(await readTextFile(file));
+      parsedContent = JSON.parse(textContent);
     } catch (e) {
-      alert("Invalid file type.");
+      alert("Invalid JSON file.");
       return;
     }
     const cleanedContent = cleanParsedContent(parsedContent);
