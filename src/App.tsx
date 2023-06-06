@@ -114,6 +114,12 @@ function cleanParsedContent(parsedContent: any): { ok: true; content: Voxel[] } 
       err = `${index} does not have a color field.`;
       break;
     }
+    try {
+      Color(voxelContent.color);
+    } catch {
+      err = `${index} does not have a valid color.`
+      break;
+    }
     if (voxelContent.position.length !== 3) {
       err = `${index} position field should be array of three numbers represent x, y, z.`;
       break;
